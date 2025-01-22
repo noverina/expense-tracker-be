@@ -1,0 +1,105 @@
+basePath: /api/v1
+definitions:
+  api.Event:
+    properties:
+      _id:
+        type: string
+      amount:
+        type: string
+      category:
+        type: string
+      date:
+        type: string
+      name:
+        type: string
+    type: object
+  controller.HttpResponse:
+    properties:
+      data: {}
+      is_error:
+        type: boolean
+      message:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+info:
+  contact: {}
+  title: Expense Tracker API
+  version: "1.0"
+paths:
+  /event:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: event information
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/api.Event'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.HttpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.HttpResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.HttpResponse'
+  /event/filter:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: filter string; MUST be in json format
+        in: body
+        name: filter
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.HttpResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.Event'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.HttpResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.HttpResponse'
+  /ping:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      tags:
+      - home
+swagger: "2.0"
