@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -73,7 +73,7 @@ func (e *Event) UnmarshalJSON(data []byte) error {
     return nil
 }
 
-func UpsertEvent(event Event) (primitive.ObjectID, error) {
+func UpsertEvent(c *gin.Context, event Event) (primitive.ObjectID, error) {
 	if err := godotenv.Load(); err != nil {
 		LogError("unable to load .env file", "err", err)
 		return primitive.NilObjectID, err
@@ -84,7 +84,7 @@ func UpsertEvent(event Event) (primitive.ObjectID, error) {
 	// no id, create new
 	if (event.ID == primitive.NilObjectID) {
 		event.ID = primitive.NewObjectID();
-		result, err := coll.InsertOne(context.TODO(), event) 
+		result, err := coll.InsertOne(c, event) 
 		if (err != nil) {
 			LogError("unable to insert", "err", err, "id", event.ID)
 			return primitive.NilObjectID, err
@@ -101,7 +101,7 @@ func UpsertEvent(event Event) (primitive.ObjectID, error) {
 				"amount": event.Amount,
         	},
     	}
-		result, err := coll.UpdateByID(context.TODO(), event.ID, entity)
+		result, err := coll.UpdateByID(c, event.ID, entity)
 		if (err != nil || result.ModifiedCount == 0) {
 			LogError("unable to update", "err", err, "id", event.ID)
 			return primitive.NilObjectID, err
@@ -110,7 +110,7 @@ func UpsertEvent(event Event) (primitive.ObjectID, error) {
 	}
 }
 
-func GetEventFilter(input map[string]interface{}) ([]Event, int, error) {
+func GetEventFilter(c *gin.Context, input map[string]interface{}) ([]Event, int, error) {
 	collName := os.Getenv("MONGODB_COLL")
 	coll := GetDB().Collection(collName);
 
@@ -124,15 +124,15 @@ func GetEventFilter(input map[string]interface{}) ([]Event, int, error) {
         
     }
 
-	cursor, err := coll.Find(context.TODO(), filter)
+	cursor, err := coll.Find(c, filter)
 	if err != nil {
 		LogError("unable to find document", "err", err)
 		return nil, http.StatusInternalServerError, err
 	}
-	defer cursor.Close(context.TODO())
+	defer cursor.Close(c)
 
 	var results []Event
-	for cursor.Next(context.TODO()) {
+	for cursor.Next(c) {
 		var event Event
 		if err := cursor.Decode(&event); err != nil {
 			LogError("unable to decode cursor", "err", err)

@@ -41,7 +41,7 @@ func UpsertEvent(c *gin.Context) {
 		return
 	}
 
-	id, err := api.UpsertEvent(event)
+	id, err := api.UpsertEvent(c, event)
 	var response HttpResponse
 	if (err != nil) {
 		response = HttpResponse{IsError: true, Message: err.Error(), Data: nil}
@@ -69,7 +69,7 @@ func GetEvent(c *gin.Context) {
 		return
 	}
 
-	events, code, err := api.GetEventFilter(input)
+	events, code, err := api.GetEventFilter(c, input)
 	var response HttpResponse
 	if (err != nil) {
 		response = HttpResponse{IsError: true, Message: err.Error(), Data: nil}
