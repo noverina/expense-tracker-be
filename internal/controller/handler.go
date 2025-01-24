@@ -69,7 +69,7 @@ func GetEvent(c *gin.Context) {
 		return
 	}
 
-	events, err, code := api.GetEventFilter(input)
+	events, code, err := api.GetEventFilter(input)
 	var response HttpResponse
 	if (err != nil) {
 		response = HttpResponse{IsError: true, Message: err.Error(), Data: nil}

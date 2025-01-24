@@ -110,14 +110,14 @@ func UpsertEvent(event Event) (primitive.ObjectID, error) {
 	}
 }
 
-func GetEventFilter(input map[string]interface{}) (*[]Event, error, int) {
+func GetEventFilter(input map[string]interface{}) ([]Event, int, error) {
 	collName := os.Getenv("MONGODB_COLL")
 	coll := GetDB().Collection(collName);
 
 	filter := bson.M{}
     for key, value := range input {
 		if _, exists := validFields[key]; !exists {
-			return nil, errors.New("invalid field " + key), http.StatusBadRequest
+			return nil, http.StatusBadRequest, errors.New("invalid field " + key)
 		} else {
 			filter[key] = value
 		}
@@ -127,7 +127,7 @@ func GetEventFilter(input map[string]interface{}) (*[]Event, error, int) {
 	cursor, err := coll.Find(context.TODO(), filter)
 	if err != nil {
 		LogError("unable to find document", "err", err)
-		return nil, err, http.StatusInternalServerError
+		return nil, http.StatusInternalServerError, err
 	}
 	defer cursor.Close(context.TODO())
 
@@ -136,16 +136,16 @@ func GetEventFilter(input map[string]interface{}) (*[]Event, error, int) {
 		var event Event
 		if err := cursor.Decode(&event); err != nil {
 			LogError("unable to decode cursor", "err", err)
-			return nil, err, http.StatusInternalServerError
+			return nil, http.StatusInternalServerError, err
 		}
 		results = append(results, event)
 	}
 	if err := cursor.Err(); err != nil {
 		LogError("cursor error", "err", err)
-		return nil, err, http.StatusInternalServerError
+		return nil, http.StatusInternalServerError, err
 	}
 	if (len(results) == 0) {
-		return nil, errors.New("unable to find document with matching filter"), http.StatusBadRequest
+		return nil, http.StatusBadRequest, errors.New("unable to find document with matching filter")
 	}
-	return &results, nil, http.StatusOK
+	return results, http.StatusOK, nil
 }
