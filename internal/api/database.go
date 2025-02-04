@@ -15,7 +15,7 @@ import (
 
 var client *mongo.Client
 
-func Init() {
+func init() {
 	if err := godotenv.Load(); err != nil {
 		fmt.Errorf("unable to load .env file err=%w", err)
 	}

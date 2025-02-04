@@ -7,6 +7,132 @@
     },
     "basePath": "/api/v1",
     "paths": {
+        "/dropdown/expense": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.HttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/api.Dropdown"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dropdown/income": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.HttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/api.Dropdown"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/dropdown/type": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.HttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/api.Dropdown"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HttpResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/event": {
             "post": {
                 "consumes": [
@@ -14,6 +140,9 @@
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "event"
                 ],
                 "parameters": [
                     {
@@ -55,6 +184,9 @@
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "event"
                 ],
                 "parameters": [
                     {
@@ -128,6 +260,17 @@
         }
     },
     "definitions": {
+        "api.Dropdown": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
         "api.Event": {
             "type": "object",
             "properties": {
@@ -143,7 +286,10 @@
                 "date": {
                     "type": "string"
                 },
-                "name": {
+                "description": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -160,9 +306,5 @@
                 }
             }
         }
-    },
-    "externalDocs": {
-        "description": "OpenAPI",
-        "url": "https://swagger.io/resources/open-api/"
     }
 }

@@ -24,6 +24,7 @@ func Ping(g *gin.Context)  {
 	g.JSON(http.StatusOK,"pong")
 }
 
+// @Tags event
 // @Accept json
 // @Produce json
 // @Param event body api.Event true "event information"
@@ -52,6 +53,7 @@ func UpsertEvent(c *gin.Context) {
 	}
 }
 
+// @Tags event
 // @Accept json
 // @Produce json
 // @Param filter body map[string]interface{} true "filter string; MUST be in json format"
@@ -76,5 +78,41 @@ func GetEvent(c *gin.Context) {
 	} else {
 		response = HttpResponse{IsError: false, Message: "", Data: events}
 	}
+	c.JSON(code, response)
+}
+
+// @Tags category
+// @Accept json
+// @Produce json
+// @Success 200 {object} HttpResponse{data=[]api.Dropdown}
+// @Failure 500 {object} HttpResponse
+// @Router /dropdown/type [get]
+func GetTypes(c *gin.Context) {
+	data, code := api.GetTypes()
+	response := HttpResponse{IsError: false, Message: "", Data: data}
+	c.JSON(code, response)
+}
+
+// @Tags category
+// @Accept json
+// @Produce json
+// @Success 200 {object} HttpResponse{data=[]api.Dropdown}
+// @Failure 500 {object} HttpResponse
+// @Router /dropdown/expense [get]
+func GetExpenses(c *gin.Context) {
+	data, code := api.GetExpenses()
+	response := HttpResponse{IsError: false, Message: "", Data: data}
+	c.JSON(code, response)
+}
+
+// @Tags category
+// @Accept json
+// @Produce json
+// @Success 200 {object} HttpResponse{data=[]api.Dropdown}
+// @Failure 500 {object} HttpResponse
+// @Router /dropdown/income [get]
+func GetIncomes(c *gin.Context) {
+	data, code := api.GetIncomes()
+	response := HttpResponse{IsError: false, Message: "", Data: data}
 	c.JSON(code, response)
 }

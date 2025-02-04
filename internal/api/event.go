@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"slices"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,19 +16,23 @@ import (
 )
 
 type Event struct {
-	ID       primitive.ObjectID `json:"_id" bson:"_id"`
-	Name     string             `json:"name" bson:"name"`
-	Category string             `json:"category" bson:"category"`
-	Date     time.Time          `json:"date" bson:"date"`
-	Amount   string 			`json:"amount" bson:"amount"`
+	ID       		primitive.ObjectID 	`json:"_id" bson:"_id"`
+	Description     string      		`json:"description" bson:"description"`
+	Type 			string             	`json:"type" bson:"type"`
+	Category 		string             	`json:"category" bson:"category"`
+	Date     		time.Time          	`json:"date" bson:"date"`
+	Amount   		string 				`json:"amount" bson:"amount"`
 }
 
-var validFields = map[string]struct{}{
-	"name":     {},
-	"category": {},
-	"date":     {},
-	"amount":   {},
-	"_id":      {},
+var validFields = []string {}
+
+func init () {
+	validFields = append(validFields, "_id")
+	validFields = append(validFields, "description")
+	validFields = append(validFields, "type")
+	validFields = append(validFields, "category")
+	validFields = append(validFields, "date")
+	validFields = append(validFields, "amount")
 }
 
 func (e *Event) UnmarshalJSON(data []byte) error {
@@ -95,8 +100,9 @@ func UpsertEvent(c *gin.Context, event Event) (primitive.ObjectID, error) {
 		entity := bson.M{
         	"$set": bson.M{
             	"_id": event.ID,
-				"name": event.Name,
+				"type": event.Type,
 				"category": event.Category,
+				"description": event.Description,
 				"date": event.Date,
 				"amount": event.Amount,
         	},
@@ -116,7 +122,7 @@ func GetEventFilter(c *gin.Context, input map[string]interface{}) ([]Event, int,
 
 	filter := bson.M{}
     for key, value := range input {
-		if _, exists := validFields[key]; !exists {
+		if exists := slices.Contains(validFields, key); !exists {
 			return nil, http.StatusBadRequest, errors.New("invalid field " + key)
 		} else {
 			filter[key] = value
