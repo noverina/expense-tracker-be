@@ -4,9 +4,13 @@ import (
 	"expense-tracker/docs"
 	"expense-tracker/internal/api"
 	"expense-tracker/internal/controller"
+	"fmt"
 	"net/http"
+	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -32,11 +36,22 @@ func ErrorHandler() gin.HandlerFunc {
 
 // @BasePath  /api/v1
 func main() {
+	if err := godotenv.Load(); err != nil {
+		fmt.Errorf("unable to load .env file err=%w", err)
+	}
+	address := os.Getenv("FRONTEND_ADDRESS")
+
 	defer api.Disconnect()
 
 	r := gin.Default()
 	r.Use(gin.Recovery())
 	r.Use(ErrorHandler())
+	r.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{address}, 
+        AllowMethods:     []string{"GET", "POST", "DELETE"}, 
+        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"}, 
+        AllowCredentials: false, 
+    }))
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
