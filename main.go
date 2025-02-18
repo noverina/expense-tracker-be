@@ -17,16 +17,36 @@ import (
 
 func ErrorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		defer func() {
+            if r := recover(); r != nil {
+				api.LogError(fmt.Sprintf("%v", r))
+                c.JSON(http.StatusInternalServerError, controller.HttpResponse{
+                    IsError: true, 
+					Message: "Uh oh! :( something unexpected happened", 
+					Data: nil,
+                })
+                c.Abort() 
+            }
+        }()
+		
 		c.Next()
 
 		if len(c.Errors) > 0 {
-			c.JSON(
+			if (!c.IsAborted()) {
+				for _, value := range c.Errors {
+					api.LogError(fmt.Sprintf("%v", value))
+				}
+				
+				c.JSON(
 				http.StatusInternalServerError, 
 				controller.HttpResponse{
 					IsError: true, 
 					Message: "Uh oh! :( something unexpected happened", 
 					Data: nil},
 				)
+			}
+			
+			c.Abort()
 		}
 	}
 }
@@ -43,8 +63,8 @@ func main() {
 
 	defer api.Disconnect()
 
-	r := gin.Default()
-	r.Use(gin.Recovery())
+	r := gin.New()
+	
 	r.Use(ErrorHandler())
 	r.Use(cors.New(cors.Config{
         AllowOrigins:     []string{address}, 
@@ -65,7 +85,8 @@ func main() {
 		event := v1.Group("/event")
 		{
 			event.POST("", controller.UpsertEvent)
-			event.POST("/filter", controller.GetEvent)
+			event.POST("/filter", controller.GetEventByFilter)
+			event.GET("/month", controller.GetEventByMonth)
 		}
 		category := v1.Group("/dropdown")
 		{
