@@ -140,7 +140,7 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: filter string; MUST be in json format
+      - description: filter criteria in json format
         in: body
         name: filter
         required: true
@@ -171,10 +171,52 @@ paths:
             $ref: '#/definitions/controller.HttpResponse'
       tags:
       - event
-  /ping:
+  /event/month:
     get:
       consumes:
       - application/json
+      parameters:
+      - description: year
+        in: query
+        name: year
+        required: true
+        type: string
+      - description: month to filter with
+        in: query
+        name: month
+        required: true
+        type: string
+      - description: timezone
+        in: query
+        name: timezone
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.HttpResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.Event'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.HttpResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.HttpResponse'
+      tags:
+      - event
+  /ping:
+    get:
       produces:
       - application/json
       responses:

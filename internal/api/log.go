@@ -47,3 +47,20 @@ func LogError(message string, keysAndValues ...interface{})  {
 	keysAndValues = append(keysAndValues, "file", fileName)
 	log.Error(message, keysAndValues...)
 }
+
+func LogWarn(message string, keysAndValues ...interface{})  {
+	pc, file, _, ok := runtime.Caller(1)
+	if !ok {
+		log.Error("unable to get function and file information")
+		return 
+	}
+
+	function := strings.Split(runtime.FuncForPC(pc).Name(), "/")
+	functionName := function[len(function)-1]
+	fileSplit := strings.Split(file, "/")
+	fileName := fileSplit[len(fileSplit)-1]
+
+	keysAndValues = append(keysAndValues, "function", functionName)
+	keysAndValues = append(keysAndValues, "file", fileName)
+	log.Warn(message, keysAndValues...)
+}

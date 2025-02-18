@@ -198,7 +198,7 @@ const docTemplate = `{
                 ],
                 "parameters": [
                     {
-                        "description": "filter string; MUST be in json format",
+                        "description": "filter criteria in json format",
                         "name": "filter",
                         "in": "body",
                         "required": true,
@@ -245,11 +245,79 @@ const docTemplate = `{
                 }
             }
         },
-        "/ping": {
+        "/event/month": {
             "get": {
                 "consumes": [
                     "application/json"
                 ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "event"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "month to filter with",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "timezone",
+                        "name": "timezone",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/controller.HttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/api.Event"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HttpResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.HttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
                 "produces": [
                     "application/json"
                 ],
