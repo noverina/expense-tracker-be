@@ -104,6 +104,31 @@ func GetEventByMonth(c *gin.Context) {
 	c.JSON(code, response)
 }
 
+// @Tags 		event
+// @Accept 		json
+// @Produce 	json
+// @Param 		year 		query 		string 		true 	"year"
+// @Param 		month 		query 		string 		true 	"month to filter with"
+// @Param 		timezone 	query 		string 		true 	"timezone"
+// @Success 	200 		{object} 	HttpResponse{data=[]api.Sum}
+// @Failure 	400 		{object} 	HttpResponse
+// @Failure 	500 		{object} 	HttpResponse
+// @Router 		/event/sum [get]
+func GetMonthSum(c *gin.Context) {
+	year := c.Query("year")
+	month := c.Query("month")
+	timezone := c.Query("timezone")
+
+	sum, code, err := api.GetMonthSum(c, year, month, timezone)
+	var response HttpResponse
+	if (err != nil) {
+		response = HttpResponse{IsError: true, Message: err.Error(), Data: nil}
+	} else {
+		response = HttpResponse{IsError: false, Message: "", Data: sum}
+	}
+	c.JSON(code, response)
+}
+
 
 // @Tags 		category
 // @Accept 		json

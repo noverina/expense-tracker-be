@@ -26,6 +26,11 @@ type Event struct {
 	Amount   		string 				`json:"amount" bson:"amount"`
 }
 
+type Sum struct {
+	ID		string	`json:"_id" bson:"_id"`
+	Amount	string	`json:"amount" bson:"amount"`
+}
+
 var validFields = []string {}
 var coll *mongo.Collection
 var max int
@@ -94,8 +99,6 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	} 
 	e.Amount = inputJSON.Amount
 	
-
-	//TODO 2020-12-09T16:09:53+00:00
     parsedDate, err := time.Parse(time.RFC3339, inputJSON.Date)
     if err != nil {
         return errors.New("invalid date format")
@@ -178,42 +181,40 @@ func GetEventFilter(c *gin.Context, input map[string]interface{}) ([]Event, int,
 
 	cursor, err := coll.Find(c, filter)
 	if err != nil {
-		LogError("unable to find document", "err", err)
+		LogError("query error", "err", err)
 		return nil, http.StatusInternalServerError, err
 	}
 	defer cursor.Close(c)
 
 	var results []Event
-	for cursor.Next(c) {
-		var event Event
-		if err := cursor.Decode(&event); err != nil {
-			LogError("unable to decode cursor", "err", err)
-			return nil, http.StatusInternalServerError, err
-		}
-		results = append(results, event)
-	}
-	if err := cursor.Err(); err != nil {
-		LogError("cursor error", "err", err)
+	if err = cursor.All(c, &results); err != nil {
+        LogError("unable to decode cursor", "err", err)
 		return nil, http.StatusInternalServerError, err
-	}
+    }
 	return results, http.StatusOK, nil
 }
 
-func GetEventByMonth(c *gin.Context, year string, month string, timezone string) ([]Event, int, error) {
+func getTimeInfo(year string, month string, timezone string) (int, int, *time.Location, error) {
 	yearNum, err := strconv.Atoi(year)
 	if (err != nil) {
-		LogError("invalid year", "err", err)
-		return nil, http.StatusBadRequest, err
+		return 0, 0, nil, err
 	}
 	monthNum, err := strconv.Atoi(month)
 	if (err != nil) {
-		LogError("invalid month", "err", err)
-		return nil, http.StatusBadRequest, err
+		return 0, 0, nil, err
 	}
 	timezoneLoc, err := time.LoadLocation(timezone)
 	if (err != nil) {
-		LogError("invalid timezone", "err", err)
-		return nil, http.StatusBadRequest, err
+		return 0, 0, nil, err
+	}
+	return yearNum, monthNum, timezoneLoc, nil
+}
+
+func GetEventByMonth(c *gin.Context, year string, month string, timezone string) ([]Event, int, error) {
+	yearNum, monthNum, timezoneLoc, err := getTimeInfo(year, month, timezone)
+	if (err != nil) {
+		LogError("failed to get date/time info", "err", err)
+		return nil, http.StatusInternalServerError, err
 	}
 	startDate := time.Date(yearNum, time.Month(monthNum), 1, 0, 0, 0, 0, timezoneLoc)
 	lastDate := time.Date(yearNum, time.Month(monthNum) + 1, 1, 0, 0, 0, 0, timezoneLoc).AddDate(0, 0, -1)
@@ -226,24 +227,79 @@ func GetEventByMonth(c *gin.Context, year string, month string, timezone string)
 
 	cursor, err := coll.Find(c, filter)
 	if err != nil {
-		LogError("unable to find document", "err", err)
+		LogError("query failed", "err", err)
 		return nil, http.StatusInternalServerError, err
 	}
 	defer cursor.Close(c)
 
 	var results []Event
-	for cursor.Next(c) {
-		var event Event
-		if err := cursor.Decode(&event); err != nil {
-			LogError("unable to decode cursor", "err", err)
-			return nil, http.StatusInternalServerError, err
-		}
-		event.Date = event.Date.In(timezoneLoc)
-		results = append(results, event)
-	}
-	if err := cursor.Err(); err != nil {
-		LogError("cursor error", "err", err)
+	if err = cursor.All(c, &results); err != nil {
+        LogError("unable to decode cursor", "err", err)
+		return nil, http.StatusInternalServerError, err
+    }
+	
+	return results, http.StatusOK, nil
+}
+
+func GetMonthSum(c *gin.Context, year string, month string, timezone string) ([]Sum, int, error) {
+	yearNum, monthNum, timezoneLoc, err := getTimeInfo(year, month, timezone)
+	if (err != nil) {
+		LogError("failed to get date/time info", "err", err)
 		return nil, http.StatusInternalServerError, err
 	}
+	startDate := time.Date(yearNum, time.Month(monthNum), 1, 0, 0, 0, 0, timezoneLoc)
+	lastDate := time.Date(yearNum, time.Month(monthNum) + 1, 1, 0, 0, 0, 0, timezoneLoc).AddDate(0, 0, -1)
+	endDate := time.Date(yearNum, time.Month(monthNum), lastDate.Day(), 0, 0, 0, 0, timezoneLoc)
+
+	pipeline := mongo.Pipeline{
+		// get events in a time range
+		bson.D{
+			{"$match", bson.D{
+				{"date", bson.D{
+					{"$gte", startDate},
+					{"$lte", endDate},
+				}},
+			}},
+		},
+		// sum amount
+		bson.D{
+			{"$addFields", bson.D{
+				{"amountDecimal", bson.D{
+					{"$toDecimal", "$amount"},
+				}},
+			}},
+		},
+		// group by type
+		bson.D{
+			{"$group", bson.D{
+				{"_id", "$type"},
+				{"total", bson.D{
+					{"$sum", "$amountDecimal"},
+				}},
+			}},
+		},
+		// convert sum to string
+		bson.D{
+        	{"$project", bson.D{
+            	{"amount", bson.D{
+                	{"$toString", "$total"},
+            	}},
+        	}},
+    	},
+    }
+
+	cursor, err := coll.Aggregate(c, pipeline)
+    if err != nil {
+        LogError("query failed", "err", err)
+		return nil, http.StatusInternalServerError, err
+    }
+    defer cursor.Close(c)
+
+    var results []Sum
+    if err = cursor.All(c, &results); err != nil {
+        LogError("unable to decode cursor", "err", err)
+		return nil, http.StatusInternalServerError, err
+    }
+
 	return results, http.StatusOK, nil
 }

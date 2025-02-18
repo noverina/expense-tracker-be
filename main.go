@@ -87,6 +87,7 @@ func main() {
 			event.POST("", controller.UpsertEvent)
 			event.POST("/filter", controller.GetEventByFilter)
 			event.GET("/month", controller.GetEventByMonth)
+			event.GET("/sum", controller.GetMonthSum)
 		}
 		category := v1.Group("/dropdown")
 		{

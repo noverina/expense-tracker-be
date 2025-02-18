@@ -22,6 +22,13 @@ definitions:
       type:
         type: string
     type: object
+  api.Sum:
+    properties:
+      _id:
+        type: string
+      amount:
+        type: string
+    type: object
   controller.HttpResponse:
     properties:
       data: {}
@@ -203,6 +210,50 @@ paths:
                 data:
                   items:
                     $ref: '#/definitions/api.Event'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.HttpResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controller.HttpResponse'
+      tags:
+      - event
+  /event/sum:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: year
+        in: query
+        name: year
+        required: true
+        type: string
+      - description: month to filter with
+        in: query
+        name: month
+        required: true
+        type: string
+      - description: timezone
+        in: query
+        name: timezone
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/controller.HttpResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.Sum'
                   type: array
               type: object
         "400":
