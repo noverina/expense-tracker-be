@@ -37,10 +37,37 @@ func GetExpenses() ([]Dropdown, int) {
 	return expenses, http.StatusOK
 }
 
+func ValidExpense(input string) bool {
+	for _, value := range expenses {
+		if value.Value == input {
+			return true
+		}
+	}
+	return false;
+}
+
 func GetIncomes() ([]Dropdown, int) {
 	return incomes, http.StatusOK
+} 
+
+func ValidIncome(input string) bool {
+	for _, value := range incomes {
+		if value.Value == input {
+			return true
+		}
+	}
+	return false;
 }
 
 func GetTypes() ([]Dropdown, int) {
 	return types, http.StatusOK
+}
+
+func ValidType(input string) bool {
+	for _, value := range types {
+		if value.Value == input {
+			return true
+		}
+	}
+	return false;
 }
