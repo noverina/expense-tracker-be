@@ -407,6 +407,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api.Category": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "sum": {
+                    "type": "string"
+                }
+            }
+        },
         "api.Dropdown": {
             "type": "object",
             "properties": {
@@ -444,10 +455,16 @@ const docTemplate = `{
         "api.Sum": {
             "type": "object",
             "properties": {
-                "_id": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.Category"
+                    }
+                },
+                "sum": {
                     "type": "string"
                 },
-                "amount": {
+                "type": {
                     "type": "string"
                 }
             }

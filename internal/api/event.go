@@ -26,9 +26,15 @@ type Event struct {
 	Amount   		string 				`json:"amount" bson:"amount"`
 }
 
+type Category struct {
+    Category 	string 	`bson:"category" json:"category"`
+    Sum      	string 	`bson:"sum" json:"sum"`
+}
+
 type Sum struct {
-	ID		string	`json:"_id" bson:"_id"`
-	Amount	string	`json:"amount" bson:"amount"`
+    Type       	string       `bson:"type" json:"type"`
+    Sum        	string       `bson:"sum" json:"sum"`
+    Categories 	[]Category 	`bson:"categories" json:"categories"`
 }
 
 var validFields = []string {}
@@ -175,6 +181,14 @@ func GetEventFilter(c *gin.Context, input map[string]interface{}) ([]Event, int,
 			} else {
 				filter[key] = value
 			}
+
+			if (key == "_id" && ok) {
+				id, err := primitive.ObjectIDFromHex(value.(string))
+				if err != nil {
+					return nil, http.StatusBadRequest, err
+				}
+				filter[key] = id
+			}
 			
 		}
     }
@@ -251,41 +265,54 @@ func GetMonthSum(c *gin.Context, year string, month string, timezone string) ([]
 	lastDate := time.Date(yearNum, time.Month(monthNum) + 1, 1, 0, 0, 0, 0, timezoneLoc).AddDate(0, 0, -1)
 	endDate := time.Date(yearNum, time.Month(monthNum), lastDate.Day(), 0, 0, 0, 0, timezoneLoc)
 
-	pipeline := mongo.Pipeline{
-		// get events in a time range
-		bson.D{
-			{"$match", bson.D{
-				{"date", bson.D{
-					{"$gte", startDate},
-					{"$lte", endDate},
-				}},
-			}},
-		},
-		// sum amount
-		bson.D{
-			{"$addFields", bson.D{
-				{"amountDecimal", bson.D{
-					{"$toDecimal", "$amount"},
-				}},
-			}},
-		},
-		// group by type
-		bson.D{
-			{"$group", bson.D{
-				{"_id", "$type"},
-				{"total", bson.D{
-					{"$sum", "$amountDecimal"},
-				}},
-			}},
-		},
-		// convert sum to string
-		bson.D{
-        	{"$project", bson.D{
-            	{"amount", bson.D{
-                	{"$toString", "$total"},
-            	}},
-        	}},
-    	},
+	  pipeline := mongo.Pipeline{
+        // filter date 
+        bson.D{{"$match", bson.D{
+            {"date", bson.D{
+                {"$gte", startDate},
+                {"$lte", endDate},
+            }},
+        }}},
+        // convert amount to string
+        bson.D{{"$addFields", bson.D{
+            {"amountDecimal", bson.D{
+                {"$toDecimal", "$amount"},
+            }},
+        }}},
+        // group by type and category, then sum for each unique category-type pair
+        bson.D{{"$group", bson.D{
+            {"_id", bson.D{
+                {"type", "$type"},
+                {"category", "$category"},
+            }},
+            {"categorySum", bson.D{
+                {"$sum", "$amountDecimal"},
+            }},
+        }}},
+        // group by type, then sum the categories of that type
+        bson.D{{"$group", bson.D{
+            {"_id", "$_id.type"},
+            {"typeSum", bson.D{
+                {"$sum", "$categorySum"},
+            }},
+            {"categories", bson.D{
+                {"$push", bson.D{
+                    {"category", "$_id.category"},
+                    {"sum", bson.D{
+                        {"$toString", "$categorySum"},
+                    }},
+                }},
+            }},
+        }}},
+        // project the result so that it conform to the struct
+        bson.D{{"$project", bson.D{
+            {"_id", 0},
+            {"type", "$_id"},
+            {"sum", bson.D{
+                {"$toString", "$typeSum"},
+            }},
+            {"categories", 1},
+        }}},
     }
 
 	cursor, err := coll.Aggregate(c, pipeline)

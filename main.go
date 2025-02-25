@@ -72,6 +72,7 @@ func main() {
         AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"}, 
         AllowCredentials: false, 
     }))
+	r.SetTrustedProxies(nil)
 
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 

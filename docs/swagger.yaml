@@ -1,5 +1,12 @@
 basePath: /api/v1
 definitions:
+  api.Category:
+    properties:
+      category:
+        type: string
+      sum:
+        type: string
+    type: object
   api.Dropdown:
     properties:
       key:
@@ -24,9 +31,13 @@ definitions:
     type: object
   api.Sum:
     properties:
-      _id:
+      categories:
+        items:
+          $ref: '#/definitions/api.Category'
+        type: array
+      sum:
         type: string
-      amount:
+      type:
         type: string
     type: object
   controller.HttpResponse:
