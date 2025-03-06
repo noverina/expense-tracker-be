@@ -1,5 +1,18 @@
-basePath: /api/v1
 definitions:
+  api.AuthAccess:
+    properties:
+      identifier:
+        type: string
+      secret_key:
+        type: string
+    type: object
+  api.AuthInfo:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
   api.Category:
     properties:
       category:
@@ -29,6 +42,14 @@ definitions:
       type:
         type: string
     type: object
+  api.HttpResponse:
+    properties:
+      data: {}
+      is_error:
+        type: boolean
+      message:
+        type: string
+    type: object
   api.Sum:
     properties:
       categories:
@@ -40,19 +61,97 @@ definitions:
       type:
         type: string
     type: object
-  controller.HttpResponse:
-    properties:
-      data: {}
-      is_error:
-        type: boolean
-      message:
-        type: string
-    type: object
 info:
   contact: {}
   title: Expense Tracker API
   version: "1.0"
 paths:
+  /auth:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: client information
+        in: body
+        name: client
+        required: true
+        schema:
+          $ref: '#/definitions/api.AuthAccess'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+      tags:
+      - auth
+  /auth/access:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: client information
+        in: body
+        name: client
+        required: true
+        schema:
+          $ref: '#/definitions/api.AuthAccess'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.HttpResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/api.AuthInfo'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+      tags:
+      - auth
+  /auth/refresh:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - auth
   /dropdown/expense:
     get:
       consumes:
@@ -64,7 +163,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/controller.HttpResponse'
+            - $ref: '#/definitions/api.HttpResponse'
             - properties:
                 data:
                   items:
@@ -74,7 +173,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
+      security:
+      - BearerAuth: []
       tags:
       - category
   /dropdown/income:
@@ -88,7 +189,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/controller.HttpResponse'
+            - $ref: '#/definitions/api.HttpResponse'
             - properties:
                 data:
                   items:
@@ -98,7 +199,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
+      security:
+      - BearerAuth: []
       tags:
       - category
   /dropdown/type:
@@ -112,7 +215,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/controller.HttpResponse'
+            - $ref: '#/definitions/api.HttpResponse'
             - properties:
                 data:
                   items:
@@ -122,7 +225,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
+      security:
+      - BearerAuth: []
       tags:
       - category
   /event:
@@ -142,15 +247,17 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
+      security:
+      - BearerAuth: []
       tags:
       - event
   /event/filter:
@@ -172,7 +279,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/controller.HttpResponse'
+            - $ref: '#/definitions/api.HttpResponse'
             - properties:
                 data:
                   items:
@@ -182,11 +289,13 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
+      security:
+      - BearerAuth: []
       tags:
       - event
   /event/month:
@@ -216,7 +325,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/controller.HttpResponse'
+            - $ref: '#/definitions/api.HttpResponse'
             - properties:
                 data:
                   items:
@@ -226,11 +335,13 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
+      security:
+      - BearerAuth: []
       tags:
       - event
   /event/sum:
@@ -260,7 +371,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/controller.HttpResponse'
+            - $ref: '#/definitions/api.HttpResponse'
             - properties:
                 data:
                   items:
@@ -270,11 +381,13 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/controller.HttpResponse'
+            $ref: '#/definitions/api.HttpResponse'
+      security:
+      - BearerAuth: []
       tags:
       - event
   /ping:
@@ -288,4 +401,10 @@ paths:
             type: string
       tags:
       - home
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer {token}" to authenticate
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

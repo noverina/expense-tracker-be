@@ -18,34 +18,34 @@ import (
 func ErrorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
-            if r := recover(); r != nil {
+			if r := recover(); r != nil {
 				api.LogError(fmt.Sprintf("%v", r))
-                c.JSON(http.StatusInternalServerError, controller.HttpResponse{
-                    IsError: true, 
-					Message: "Uh oh! :( something unexpected happened", 
-					Data: nil,
-                })
-                c.Abort() 
-            }
-        }()
-		
+				c.JSON(http.StatusInternalServerError, api.HttpResponse{
+					IsError: true,
+					Message: "Uh oh! :( something unexpected happened",
+					Data:    nil,
+				})
+				c.Abort()
+			}
+		}()
+
 		c.Next()
 
 		if len(c.Errors) > 0 {
-			if (!c.IsAborted()) {
+			if !c.IsAborted() {
 				for _, value := range c.Errors {
 					api.LogError(fmt.Sprintf("%v", value))
 				}
-				
+
 				c.JSON(
-				http.StatusInternalServerError, 
-				controller.HttpResponse{
-					IsError: true, 
-					Message: "Uh oh! :( something unexpected happened", 
-					Data: nil},
+					http.StatusInternalServerError,
+					api.HttpResponse{
+						IsError: true,
+						Message: "Uh oh! :( something unexpected happened",
+						Data:    nil},
 				)
 			}
-			
+
 			c.Abort()
 		}
 	}
@@ -53,7 +53,10 @@ func ErrorHandler() gin.HandlerFunc {
 
 // @title           Expense Tracker API
 // @version         1.0
-
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer {token}" to authenticate
 // @BasePath  /api/v1
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -61,19 +64,22 @@ func main() {
 	}
 	address := os.Getenv("FRONTEND_ADDRESS")
 
+	api.InitDB()
+	api.InitAuth()
+	api.InitEvent()
+	api.InitLog()
+
 	defer api.Disconnect()
 
 	r := gin.New()
-	
 	r.Use(ErrorHandler())
 	r.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{address}, 
-        AllowMethods:     []string{"GET", "POST", "DELETE"}, 
-        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"}, 
-        AllowCredentials: false, 
-    }))
+		AllowOrigins:     []string{address},
+		AllowMethods:     []string{"GET", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: false,
+	}))
 	r.SetTrustedProxies(nil)
-
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	docs.SwaggerInfo.BasePath = "/api/v1"
@@ -82,8 +88,17 @@ func main() {
 		home := v1.Group("")
 		{
 			home.GET("/ping", controller.Ping)
+
+		}
+		auth := v1.Group("/auth")
+		{
+			//TODO disable register endpoint later
+			auth.POST("", controller.Register)
+			auth.POST("/access", controller.Access)
+			auth.GET("/refresh", api.JWTAuthMiddleware(), controller.Refresh)
 		}
 		event := v1.Group("/event")
+		event.Use(api.JWTAuthMiddleware())
 		{
 			event.POST("", controller.UpsertEvent)
 			event.POST("/filter", controller.GetEventByFilter)
@@ -91,6 +106,7 @@ func main() {
 			event.GET("/sum", controller.GetMonthSum)
 		}
 		category := v1.Group("/dropdown")
+		category.Use(api.JWTAuthMiddleware())
 		{
 			category.GET("/type", controller.GetTypes)
 			category.GET("/expense", controller.GetExpenses)

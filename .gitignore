@@ -24,3 +24,5 @@ go.work.sum
 # env file
 .env
 .vscode/launch.json
+private_key.pem
+public_key.pem

@@ -4,11 +4,6 @@ import (
 	"net/http"
 )
 
-type Dropdown struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
-}
-
 var types []Dropdown
 var expenses []Dropdown
 var incomes []Dropdown
@@ -43,12 +38,12 @@ func ValidExpense(input string) bool {
 			return true
 		}
 	}
-	return false;
+	return false
 }
 
 func GetIncomes() ([]Dropdown, int) {
 	return incomes, http.StatusOK
-} 
+}
 
 func ValidIncome(input string) bool {
 	for _, value := range incomes {
@@ -56,7 +51,7 @@ func ValidIncome(input string) bool {
 			return true
 		}
 	}
-	return false;
+	return false
 }
 
 func GetTypes() ([]Dropdown, int) {
@@ -69,5 +64,5 @@ func ValidType(input string) bool {
 			return true
 		}
 	}
-	return false;
+	return false
 }

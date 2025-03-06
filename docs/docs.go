@@ -15,8 +15,154 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "parameters": [
+                    {
+                        "description": "client information",
+                        "name": "client",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.AuthAccess"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.HttpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HttpResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/access": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "parameters": [
+                    {
+                        "description": "client information",
+                        "name": "client",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.AuthAccess"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.HttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/api.AuthInfo"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HttpResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HttpResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.HttpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.HttpResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.HttpResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/dropdown/expense": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -32,7 +178,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/controller.HttpResponse"
+                                    "$ref": "#/definitions/api.HttpResponse"
                                 },
                                 {
                                     "type": "object",
@@ -51,7 +197,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     }
                 }
@@ -59,6 +205,11 @@ const docTemplate = `{
         },
         "/dropdown/income": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -74,7 +225,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/controller.HttpResponse"
+                                    "$ref": "#/definitions/api.HttpResponse"
                                 },
                                 {
                                     "type": "object",
@@ -93,7 +244,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     }
                 }
@@ -101,6 +252,11 @@ const docTemplate = `{
         },
         "/dropdown/type": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -116,7 +272,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/controller.HttpResponse"
+                                    "$ref": "#/definitions/api.HttpResponse"
                                 },
                                 {
                                     "type": "object",
@@ -135,7 +291,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     }
                 }
@@ -143,6 +299,11 @@ const docTemplate = `{
         },
         "/event": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -167,19 +328,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     }
                 }
@@ -187,6 +348,11 @@ const docTemplate = `{
         },
         "/event/filter": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -214,7 +380,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/controller.HttpResponse"
+                                    "$ref": "#/definitions/api.HttpResponse"
                                 },
                                 {
                                     "type": "object",
@@ -233,13 +399,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     }
                 }
@@ -247,6 +413,11 @@ const docTemplate = `{
         },
         "/event/month": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -285,7 +456,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/controller.HttpResponse"
+                                    "$ref": "#/definitions/api.HttpResponse"
                                 },
                                 {
                                     "type": "object",
@@ -304,13 +475,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     }
                 }
@@ -318,6 +489,11 @@ const docTemplate = `{
         },
         "/event/sum": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -356,7 +532,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/controller.HttpResponse"
+                                    "$ref": "#/definitions/api.HttpResponse"
                                 },
                                 {
                                     "type": "object",
@@ -375,13 +551,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/controller.HttpResponse"
+                            "$ref": "#/definitions/api.HttpResponse"
                         }
                     }
                 }
@@ -407,6 +583,28 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api.AuthAccess": {
+            "type": "object",
+            "properties": {
+                "identifier": {
+                    "type": "string"
+                },
+                "secret_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.AuthInfo": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
         "api.Category": {
             "type": "object",
             "properties": {
@@ -452,6 +650,18 @@ const docTemplate = `{
                 }
             }
         },
+        "api.HttpResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "is_error": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "api.Sum": {
             "type": "object",
             "properties": {
@@ -468,18 +678,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "controller.HttpResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "is_error": {
-                    "type": "boolean"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer {token}\" to authenticate",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
@@ -488,7 +694,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
-	BasePath:         "/api/v1",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Expense Tracker API",
 	Description:      "",
