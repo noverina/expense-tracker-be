@@ -26,3 +26,5 @@ go.work.sum
 .vscode/launch.json
 private_key.pem
 public_key.pem
+cert_key.pem
+cert.pem
