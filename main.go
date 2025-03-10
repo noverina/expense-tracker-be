@@ -56,7 +56,7 @@ func ErrorHandler() gin.HandlerFunc {
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-// @description Type "Bearer {token}" to authenticate
+// @description ! IMPORTANT ! Please prepend Bearer manually. Example: "Bearer {token}"
 // @BasePath  /api/v1
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -114,5 +114,21 @@ func main() {
 		}
 	}
 
-	r.Run(":8083")
+	cert := os.Getenv("CERT")
+	certKey := os.Getenv("CERT_KEY")
+	err := r.RunTLS(":443", cert, certKey)
+	if err != nil {
+		api.LogError("failed to start https", "err", err)
+		os.Exit(1)
+	}
+	httpRedirect := gin.Default()
+	httpRedirect.GET("/*any", func(c *gin.Context) {
+		host := os.Getenv("HOST_ADDRESS")
+		c.Redirect(http.StatusMovedPermanently, host+c.Request.RequestURI)
+	})
+
+	if err := httpRedirect.Run(":80"); err != nil {
+		api.LogError("failed to start http", "err", err)
+		os.Exit(1)
+	}
 }
