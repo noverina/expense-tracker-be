@@ -16,7 +16,12 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/auth": {
-            "post": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -26,59 +31,14 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
+                "summary": "invalidate token",
                 "parameters": [
                     {
-                        "description": "client information",
-                        "name": "client",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/api.AuthAccess"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/api.HttpResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.HttpResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.HttpResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/access": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "parameters": [
-                    {
-                        "description": "client information",
-                        "name": "client",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/api.AuthAccess"
-                        }
+                        "type": "string",
+                        "description": "the token string to invalidate",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -93,10 +53,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/api.AuthInfo"
-                                            }
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -116,10 +73,8 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/auth/refresh": {
-            "get": {
+            },
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -134,11 +89,35 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
+                "summary": "generate token",
+                "parameters": [
+                    {
+                        "description": "client information",
+                        "name": "client",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.Auth"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.HttpResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.HttpResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -170,7 +149,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "category"
+                    "dropdown"
                 ],
                 "responses": {
                     "200": {
@@ -217,7 +196,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "category"
+                    "dropdown"
                 ],
                 "responses": {
                     "200": {
@@ -264,8 +243,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "category"
+                    "dropdown"
                 ],
+                "summary": "type: income / expense",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -313,6 +293,7 @@ const docTemplate = `{
                 "tags": [
                     "event"
                 ],
+                "summary": "upsert event",
                 "parameters": [
                     {
                         "description": "event information",
@@ -353,6 +334,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "please input filter criteria body must be in JSON format. example: {\"_id\": \"123\"}",
                 "consumes": [
                     "application/json"
                 ],
@@ -362,6 +344,7 @@ const docTemplate = `{
                 "tags": [
                     "event"
                 ],
+                "summary": "get events by filter",
                 "parameters": [
                     {
                         "description": "filter criteria in json format",
@@ -427,6 +410,7 @@ const docTemplate = `{
                 "tags": [
                     "event"
                 ],
+                "summary": "get all events in a given month",
                 "parameters": [
                     {
                         "type": "string",
@@ -494,6 +478,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "get income + expense summary for each category in a given month; also output total income + spending in said month",
                 "consumes": [
                     "application/json"
                 ],
@@ -503,6 +488,7 @@ const docTemplate = `{
                 "tags": [
                     "event"
                 ],
+                "summary": "income + expense summary in a given month",
                 "parameters": [
                     {
                         "type": "string",
@@ -565,6 +551,11 @@ const docTemplate = `{
         },
         "/ping": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -583,24 +574,13 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "api.AuthAccess": {
+        "api.Auth": {
             "type": "object",
             "properties": {
                 "identifier": {
                     "type": "string"
                 },
                 "secret_key": {
-                    "type": "string"
-                }
-            }
-        },
-        "api.AuthInfo": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "refresh_token": {
                     "type": "string"
                 }
             }
@@ -682,7 +662,7 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "BearerAuth": {
-            "description": "Type \"Bearer {token}\" to authenticate",
+            "description": "! IMPORTANT ! Please prepend Bearer manually. Example: \"Bearer {token}\"",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"

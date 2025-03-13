@@ -3,15 +3,9 @@ package api
 import (
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-type Client struct {
-	Identifier string `json:"identifier" bson:"_id"`
-	SecretKey  string `json:"secret_key" bson:"secret_key"`
-	Access     string `json:"access" bson:"access"`
-	Refresh    string `json:"refresh" bson:"refresh"`
-}
 
 type Dropdown struct {
 	Key   string `json:"key"`
@@ -46,22 +40,26 @@ type Log struct {
 	Date     time.Time          `json:"date" bson:"date"`
 }
 
+type Client struct {
+	Identifier string `json:"identifier" bson:"_id"`
+	SecretKey  string `json:"secret_key" bson:"secret_key"`
+	Token      string `json:"token" bson:"token"`
+	Role       string `json:"role" bson:"role"`
+	Exp        int64  `json:"exp" bson:"exp"`
+}
+
+type Claims struct {
+	jwt.RegisteredClaims
+	Role string
+}
+
 type HttpResponse struct {
 	IsError bool        `json:"is_error"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
-type AuthAccess struct {
+type Auth struct {
 	Identifier string `json:"identifier"`
 	SecretKey  string `json:"secret_key"`
-}
-
-type AuthRefresh struct {
-	Token string `json:"token"`
-}
-
-type AuthInfo struct {
-	AccessToken  string `json:"refresh_token"`
-	RefreshToken string `json:"access_token"`
 }

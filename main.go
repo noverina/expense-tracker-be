@@ -64,71 +64,58 @@ func main() {
 	}
 	address := os.Getenv("FRONTEND_ADDRESS")
 
-	api.InitDB()
-	api.InitAuth()
-	api.InitEvent()
-	api.InitLog()
-
-	defer api.Disconnect()
-
 	r := gin.New()
-	r.Use(ErrorHandler())
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{address},
 		AllowMethods:     []string{"GET", "POST", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		AllowCredentials: false,
+		AllowCredentials: true,
 	}))
+	r.OPTIONS("/*path", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
+	r.Use(ErrorHandler())
 	r.SetTrustedProxies(nil)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
+	api.InitDB()
+	api.InitAuth()
+	api.InitEvent()
+	api.InitLog()
+	defer api.Disconnect()
+
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	v1 := r.Group("/api/v1")
+	v1.Use(api.JWTAuthMiddleware())
 	{
 		home := v1.Group("")
+		home.Use(api.RoleAuthMiddleware("client"))
 		{
 			home.GET("/ping", controller.Ping)
 
 		}
 		auth := v1.Group("/auth")
 		{
-			//TODO disable register endpoint later
-			auth.POST("", controller.Register)
-			auth.POST("/access", controller.Access)
-			auth.GET("/refresh", api.JWTAuthMiddleware(), controller.Refresh)
+			auth.POST("", api.RoleAuthMiddleware("client"), controller.GenerateToken)
+			auth.GET("", api.RoleAuthMiddleware("admin"), controller.InvalidateToken)
 		}
 		event := v1.Group("/event")
-		event.Use(api.JWTAuthMiddleware())
+		event.Use(api.RoleAuthMiddleware("client"))
 		{
 			event.POST("", controller.UpsertEvent)
 			event.POST("/filter", controller.GetEventByFilter)
 			event.GET("/month", controller.GetEventByMonth)
 			event.GET("/sum", controller.GetMonthSum)
 		}
-		category := v1.Group("/dropdown")
-		category.Use(api.JWTAuthMiddleware())
+		dropdown := v1.Group("/dropdown")
+		dropdown.Use(api.RoleAuthMiddleware("client"))
 		{
-			category.GET("/type", controller.GetTypes)
-			category.GET("/expense", controller.GetExpenses)
-			category.GET("/income", controller.GetIncomes)
+			dropdown.GET("/type", controller.GetTypes)
+			dropdown.GET("/expense", controller.GetExpenses)
+			dropdown.GET("/income", controller.GetIncomes)
 		}
 	}
 
-	cert := os.Getenv("CERT")
-	certKey := os.Getenv("CERT_KEY")
-	err := r.RunTLS(":443", cert, certKey)
-	if err != nil {
-		api.LogError("failed to start https", "err", err)
-		os.Exit(1)
-	}
-	httpRedirect := gin.Default()
-	httpRedirect.GET("/*any", func(c *gin.Context) {
-		host := os.Getenv("HOST_ADDRESS")
-		c.Redirect(http.StatusMovedPermanently, host+c.Request.RequestURI)
-	})
-
-	if err := httpRedirect.Run(":80"); err != nil {
-		api.LogError("failed to start http", "err", err)
-		os.Exit(1)
-	}
+	r.Run("localhost:8083")
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // @BasePath 	/api/v1
-
+// @Security 	BearerAuth
 // @Tags 		home
 // @Produce 	json
 // @Success 	200 	{string} 	pong
@@ -19,6 +19,7 @@ func Ping(g *gin.Context) {
 
 // @Tags 		event
 // @Security 	BearerAuth
+// @Summary		upsert event
 // @Accept 		json
 // @Produce 	json
 // @Param 		event 	body 		api.Event 	true 	"event information"
@@ -48,6 +49,8 @@ func UpsertEvent(c *gin.Context) {
 
 // @Tags 		event
 // @Security 	BearerAuth
+// @Summary		get events by filter
+// @Description	please input filter criteria body must be in JSON format. example: {"_id": "123"}
 // @Accept 		json
 // @Produce 	json
 // @Param 		filter 	body 		map[string]interface{} 	true 	"filter criteria in json format"
@@ -77,6 +80,7 @@ func GetEventByFilter(c *gin.Context) {
 
 // @Tags 		event
 // @Security 	BearerAuth
+// @Summary		get all events in a given month
 // @Accept 		json
 // @Produce 	json
 // @Param 		year 		query 		string 		true 	"year"
@@ -103,6 +107,8 @@ func GetEventByMonth(c *gin.Context) {
 
 // @Tags 		event
 // @Security 	BearerAuth
+// @Summary		income + expense summary in a given month
+// @Description	get income + expense summary for each category in a given month; also output total income + spending in said month
 // @Accept 		json
 // @Produce 	json
 // @Param 		year 		query 		string 		true 	"year"
@@ -124,44 +130,5 @@ func GetMonthSum(c *gin.Context) {
 	} else {
 		response = api.HttpResponse{IsError: false, Message: "", Data: sum}
 	}
-	c.JSON(code, response)
-}
-
-// @Tags 		category
-// @Security 	BearerAuth
-// @Accept 		json
-// @Produce 	json
-// @Success 	200 	{object} 	api.HttpResponse{data=[]api.Dropdown}
-// @Failure 	500 	{object} 	api.HttpResponse
-// @Router 		/dropdown/type [get]
-func GetTypes(c *gin.Context) {
-	data, code := api.GetTypes()
-	response := api.HttpResponse{IsError: false, Message: "", Data: data}
-	c.JSON(code, response)
-}
-
-// @Tags		category
-// @Security 	BearerAuth
-// @Accept 		json
-// @Produce 	json
-// @Success 	200 	{object} 	api.HttpResponse{data=[]api.Dropdown}
-// @Failure 	500 	{object} 	api.HttpResponse
-// @Router 		/dropdown/expense [get]
-func GetExpenses(c *gin.Context) {
-	data, code := api.GetExpenses()
-	response := api.HttpResponse{IsError: false, Message: "", Data: data}
-	c.JSON(code, response)
-}
-
-// @Tags 		category
-// @Security 	BearerAuth
-// @Accept 		json
-// @Produce 	json
-// @Success 	200 	{object} 	api.HttpResponse{data=[]api.Dropdown}
-// @Failure 	500 	{object} 	api.HttpResponse
-// @Router 		/dropdown/income [get]
-func GetIncomes(c *gin.Context) {
-	data, code := api.GetIncomes()
-	response := api.HttpResponse{IsError: false, Message: "", Data: data}
 	c.JSON(code, response)
 }

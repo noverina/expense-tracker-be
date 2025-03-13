@@ -23,14 +23,23 @@ func InitAuth() {
 	authColl = GetDB().Collection(collName)
 }
 
-func loadPrivateKey() (*rsa.PrivateKey, error) {
-	filePath := os.Getenv("PRIVATE_KEY")
-	dir, err := os.Getwd()
+func findById(c *gin.Context, id string) (*Client, error) {
+	filter := bson.M{"_id": id}
+
+	var result Client
+	err := authColl.FindOne(c, filter).Decode(&result)
 	if err != nil {
+		LogError("query failed", "err", err)
 		return nil, err
 	}
 
-	keyData, err := os.ReadFile(dir + "/" + filePath)
+	return &result, nil
+}
+
+func loadPrivateKey() (*rsa.PrivateKey, error) {
+	filePath := os.Getenv("PRIVATE_KEY")
+
+	keyData, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +54,8 @@ func loadPrivateKey() (*rsa.PrivateKey, error) {
 
 func loadPublicKey() (*rsa.PublicKey, error) {
 	filePath := os.Getenv("PUBLIC_KEY")
-	dir, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
 
-	keyData, err := os.ReadFile(dir + "/" + filePath)
+	keyData, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -63,55 +68,47 @@ func loadPublicKey() (*rsa.PublicKey, error) {
 	return key, nil
 }
 
-func validateJWT(tokenString string) (*jwt.Token, error) {
+func validateJWT(tokenString string) (*jwt.Token, *Claims, error) {
 	publicKey, err := loadPublicKey()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("invalid signing method", token.Header["alg"])
 		}
 		return publicKey, nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return nil, nil, fmt.Errorf("invalid token")
 	}
 
-	return token, nil
+	return token, claims, nil
 }
 
-func generateJWT(identifier string, isAccess bool) (string, error) {
+func generateJWT(identifier string, role string) (string, error) {
 	privateKey, err := loadPrivateKey()
 	if err != nil {
 		return "", err
 	}
 
-	expiryAccess, err := strconv.Atoi(os.Getenv("ACCESS_EXPIRY"))
+	expiry, err := strconv.Atoi(os.Getenv("TOKEN_EXPIRY"))
 	if err != nil {
 		return "", err
 	}
-	expiryRefresh, err := strconv.Atoi(os.Getenv("REFRESH_EXPIRY"))
-	if err != nil {
-		return "", err
-	}
-	var expiry time.Duration
-	if isAccess {
-		expiry = time.Hour * time.Duration(expiryAccess)
-	} else {
-		expiry = time.Hour * time.Duration(expiryRefresh)
-	}
+	exp := time.Second * time.Duration(expiry)
 
 	claims := jwt.MapClaims{
-		"iss": "expense-tracker-be",
-		"aud": identifier,
-		"iat": time.Now(),
-		"exp": time.Now().Add(expiry).Unix(),
+		"iss":  "expense-tracker-be",
+		"aud":  identifier,
+		"role": role,
+		"iat":  time.Now().Unix(),
+		"exp":  time.Now().Add(exp).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
@@ -124,124 +121,71 @@ func generateJWT(identifier string, isAccess bool) (string, error) {
 	return signedToken, nil
 }
 
-// TODO this function is only for dev/testing purpose! inject data via db later
-func Register(c *gin.Context, identifier string, secretKey string) (int, error) {
-	secretKeyByte := []byte(secretKey)
-
-	hashedSecretKey, err := bcrypt.GenerateFromPassword(secretKeyByte, 12)
-	if err != nil {
-		LogError("unable to encrypt password", "err", err)
-		return http.StatusInternalServerError, err
-	}
-
-	accessToken, err := generateJWT(identifier, true)
-	if err != nil {
-		LogError("unable to generate access jwt", "err", err)
-		return http.StatusInternalServerError, err
-	}
-	refreshToken, err := generateJWT(identifier, false)
-	if err != nil {
-		LogError("unable to generate refresh jwt", "err", err)
-		return http.StatusInternalServerError, err
-	}
-
-	entity := Client{
-		Identifier: identifier,
-		SecretKey:  string(hashedSecretKey),
-		Access:     accessToken,
-		Refresh:    refreshToken,
-	}
-
-	if _, err := authColl.InsertOne(c, entity); err != nil {
-		LogError("unable to insert", "err", err, "id", identifier)
-		return http.StatusInternalServerError, err
-	}
-
-	return http.StatusOK, nil
-}
-
-func Access(c *gin.Context, identifier string, secretKey string) (*AuthInfo, int, error) {
+func GenerateToken(c *gin.Context, identifier string, secretKey string) (string, int, error) {
 	filter := bson.M{"_id": identifier}
 
 	var result Client
 	if err := authColl.FindOne(c, filter).Decode(&result); err != nil && err != mongo.ErrNoDocuments {
 		LogError("query failed", "err", err)
-		return nil, http.StatusInternalServerError, err
+		return "", http.StatusInternalServerError, err
 	} else if err == mongo.ErrNoDocuments {
-		return nil, http.StatusUnauthorized, fmt.Errorf("invalid credential")
+		return "", http.StatusUnauthorized, fmt.Errorf("invalid credential")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(result.SecretKey), []byte(secretKey)); err != nil {
-		return nil, http.StatusUnauthorized, fmt.Errorf("invalid credential")
+		return "", http.StatusUnauthorized, fmt.Errorf("invalid credential")
 	}
 
-	accessToken, err := generateJWT(identifier, true)
+	token, err := generateJWT(identifier, result.Role)
 	if err != nil {
-		LogError("unable to generate access jwt", "err", err)
-		return nil, http.StatusInternalServerError, err
-	}
-	refreshToken, err := generateJWT(identifier, false)
-	if err != nil {
-		LogError("unable to generate refresh jwt", "err", err)
-		return nil, http.StatusInternalServerError, err
+		LogError("unable to generate jwt", "err", err)
+		return "", http.StatusInternalServerError, err
 	}
 
+	expiry, err := strconv.Atoi(os.Getenv("TOKEN_EXPIRY"))
+	if err != nil {
+		return "", http.StatusInternalServerError, err
+	}
+	exp := time.Second * time.Duration(expiry)
 	entity := bson.M{
 		"$set": bson.M{
-			"access":  accessToken,
-			"refresh": refreshToken,
+			"token": token,
+			"exp":   time.Now().Add(exp).Unix(),
 		},
 	}
 
 	if _, err := authColl.UpdateByID(c, result.Identifier, entity); err != nil {
 		LogError("unable to update", "err", err, "id", result.Identifier)
-		return nil, http.StatusInternalServerError, err
+		return "", http.StatusInternalServerError, err
 	}
 
-	output := AuthInfo{AccessToken: accessToken, RefreshToken: refreshToken}
-	return &output, http.StatusOK, nil
-
+	return token, http.StatusOK, nil
 }
 
-func Refresh(c *gin.Context, tokenString string) (string, int, error) {
-	if _, err := validateJWT(tokenString); err != nil {
-		return "", http.StatusBadRequest, fmt.Errorf("invalid token")
-	} else {
-		publicKey, err := loadPublicKey()
-		if err != nil {
-			return "", http.StatusInternalServerError, err
-		}
+func InvalidateToken(c *gin.Context, token string) (int, error) {
+	filter := bson.M{"token": token}
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-				return nil, fmt.Errorf("invalid signing method", token.Header["alg"])
-			}
-			return publicKey, nil
-		})
-		audience, err := token.Claims.GetAudience()
-		if err != nil {
-			return "", http.StatusInternalServerError, err
-		}
-
-		refreshedToken, err := generateJWT(audience[0], false)
-		if err != nil {
-			LogError("unable to generate jwt", "err", err)
-			return "", http.StatusInternalServerError, nil
-		}
-		entity := bson.M{
-			"$set": bson.M{
-				"access": refreshedToken,
-			},
-		}
-
-		if _, err := authColl.UpdateByID(c, audience[0], entity); err != nil {
-			LogError("unable to update", "err", err, "id", audience[0])
-			return "", http.StatusInternalServerError, err
-		}
-
-		return refreshedToken, http.StatusOK, nil
+	var result Client
+	if err := authColl.FindOne(c, filter).Decode(&result); err != nil && err != mongo.ErrNoDocuments {
+		LogError("query failed", "err", err)
+		return http.StatusInternalServerError, err
+	} else if err == mongo.ErrNoDocuments {
+		return http.StatusUnauthorized, fmt.Errorf("invalid token")
 	}
 
+	entity := bson.M{
+		"$set": bson.M{
+			"token": "token has been invalidated. please generate a new one",
+			"exp":   0,
+		},
+	}
+
+	if _, err := authColl.UpdateByID(c, result.Identifier, entity); err != nil {
+		LogError("unable to update", "err", err, "id", result.Identifier)
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
 }
 
 func JWTAuthMiddleware() gin.HandlerFunc {
@@ -258,9 +202,9 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
-		_, err := validateJWT(tokenString)
+		_, claims, err := validateJWT(tokenString)
 		if err != nil {
-			LogWarn("invalid jwt", "err", err)
+			LogWarn("jwt auth error", "err", err)
 			c.JSON(http.StatusUnauthorized, HttpResponse{
 				IsError: true,
 				Message: "invalid jwt",
@@ -269,6 +213,38 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		aud := claims.Audience
+		dbToken, err := findById(c, aud[0])
+		if tokenString != dbToken.Token || err != nil {
+			if err == nil {
+				err = fmt.Errorf("token doesn't match value in db")
+			}
+			LogWarn("jwt auth error", "err", err)
+			c.JSON(http.StatusUnauthorized, HttpResponse{
+				IsError: true,
+				Message: "invalid jwt",
+			})
+			c.Abort()
+			return
+		}
+
+		c.Set("role", claims.Role)
+		c.Next()
+	}
+}
+
+func RoleAuthMiddleware(requiredRole string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("role")
+		if !exists || (role != requiredRole && role != "admin") {
+			LogWarn("jwt auth error", "err", "no permission")
+			c.JSON(http.StatusForbidden, HttpResponse{
+				IsError: true,
+				Message: "you don't have permission to access this resource",
+			})
+			c.Abort()
+			return
+		}
 		c.Next()
 	}
 }

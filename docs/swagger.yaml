@@ -1,16 +1,9 @@
 definitions:
-  api.AuthAccess:
+  api.Auth:
     properties:
       identifier:
         type: string
       secret_key:
-        type: string
-    type: object
-  api.AuthInfo:
-    properties:
-      access_token:
-        type: string
-      refresh_token:
         type: string
     type: object
   api.Category:
@@ -67,44 +60,15 @@ info:
   version: "1.0"
 paths:
   /auth:
-    post:
+    get:
       consumes:
       - application/json
       parameters:
-      - description: client information
-        in: body
-        name: client
+      - description: the token string to invalidate
+        in: query
+        name: token
         required: true
-        schema:
-          $ref: '#/definitions/api.AuthAccess'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.HttpResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.HttpResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.HttpResponse'
-      tags:
-      - auth
-  /auth/access:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: client information
-        in: body
-        name: client
-        required: true
-        schema:
-          $ref: '#/definitions/api.AuthAccess'
+        type: string
       produces:
       - application/json
       responses:
@@ -115,31 +79,8 @@ paths:
             - $ref: '#/definitions/api.HttpResponse'
             - properties:
                 data:
-                  items:
-                    $ref: '#/definitions/api.AuthInfo'
-                  type: array
+                  type: string
               type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.HttpResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.HttpResponse'
-      tags:
-      - auth
-  /auth/refresh:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.HttpResponse'
         "400":
           description: Bad Request
           schema:
@@ -150,6 +91,42 @@ paths:
             $ref: '#/definitions/api.HttpResponse'
       security:
       - BearerAuth: []
+      summary: invalidate token
+      tags:
+      - auth
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: client information
+        in: body
+        name: client
+        required: true
+        schema:
+          $ref: '#/definitions/api.Auth'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.HttpResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.HttpResponse'
+      security:
+      - BearerAuth: []
+      summary: generate token
       tags:
       - auth
   /dropdown/expense:
@@ -177,7 +154,7 @@ paths:
       security:
       - BearerAuth: []
       tags:
-      - category
+      - dropdown
   /dropdown/income:
     get:
       consumes:
@@ -203,7 +180,7 @@ paths:
       security:
       - BearerAuth: []
       tags:
-      - category
+      - dropdown
   /dropdown/type:
     get:
       consumes:
@@ -228,8 +205,9 @@ paths:
             $ref: '#/definitions/api.HttpResponse'
       security:
       - BearerAuth: []
+      summary: 'type: income / expense'
       tags:
-      - category
+      - dropdown
   /event:
     post:
       consumes:
@@ -258,12 +236,15 @@ paths:
             $ref: '#/definitions/api.HttpResponse'
       security:
       - BearerAuth: []
+      summary: upsert event
       tags:
       - event
   /event/filter:
     post:
       consumes:
       - application/json
+      description: 'please input filter criteria body must be in JSON format. example:
+        {"_id": "123"}'
       parameters:
       - description: filter criteria in json format
         in: body
@@ -296,6 +277,7 @@ paths:
             $ref: '#/definitions/api.HttpResponse'
       security:
       - BearerAuth: []
+      summary: get events by filter
       tags:
       - event
   /event/month:
@@ -342,12 +324,15 @@ paths:
             $ref: '#/definitions/api.HttpResponse'
       security:
       - BearerAuth: []
+      summary: get all events in a given month
       tags:
       - event
   /event/sum:
     get:
       consumes:
       - application/json
+      description: get income + expense summary for each category in a given month;
+        also output total income + spending in said month
       parameters:
       - description: year
         in: query
@@ -388,6 +373,7 @@ paths:
             $ref: '#/definitions/api.HttpResponse'
       security:
       - BearerAuth: []
+      summary: income + expense summary in a given month
       tags:
       - event
   /ping:
@@ -399,11 +385,13 @@ paths:
           description: OK
           schema:
             type: string
+      security:
+      - BearerAuth: []
       tags:
       - home
 securityDefinitions:
   BearerAuth:
-    description: Type "Bearer {token}" to authenticate
+    description: '! IMPORTANT ! Please prepend Bearer manually. Example: "Bearer {token}"'
     in: header
     name: Authorization
     type: apiKey
