@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"os"
 	"regexp"
@@ -11,11 +10,19 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+type Event struct {
+	ID          primitive.ObjectID `json:"_id" bson:"_id"`
+	Description string             `json:"description" bson:"description"`
+	Type        string             `json:"type" bson:"type"`
+	Category    string             `json:"category" bson:"category"`
+	Date        time.Time          `json:"date" bson:"date"`
+	Amount      string             `json:"amount" bson:"amount"`
+}
 
 var validFields = []string{}
 var max int
@@ -33,7 +40,7 @@ func InitEvent() {
 	var err error
 	max, err = strconv.Atoi(os.Getenv("MAX_EVENT_COUNT"))
 	if err != nil {
-		LogError("unable to convert string to integer")
+		LogError("unable to convert from string to integer", "err", err)
 	}
 }
 
@@ -51,7 +58,7 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	}
 
 	if err := json.Unmarshal(data, &inputJSON); err != nil {
-		return errors.New("unable to unmarshal json into document")
+		return err
 	}
 
 	if inputJSON.ID == "" {
@@ -59,58 +66,51 @@ func (e *Event) UnmarshalJSON(data []byte) error {
 	} else {
 		id, err := primitive.ObjectIDFromHex(inputJSON.ID)
 		if err != nil {
-			return errors.New("invalid objectId")
+			return err
 		}
 		e.ID = id
 	}
 
 	if !ValidType(inputJSON.Type) {
-		return errors.New("invalid type")
+		return ErrInvalidType
 	}
 	e.Type = inputJSON.Type
 
 	if e.Type == "income" {
 		if !ValidIncome(inputJSON.Category) {
-			return errors.New("invalid category")
+			return ErrInvalidCategory
 		}
 	} else {
 		if !ValidExpense(inputJSON.Category) {
-			return errors.New("invalid category")
+			return ErrInvalidCategory
 		}
 	}
 	e.Category = inputJSON.Category
 
 	if !regexp.MustCompile(`^[0-9]*$`).MatchString(inputJSON.Amount) {
-		return errors.New("amount must only contain numbers")
+		return ErrAmountInvalidChar
 	}
 	e.Amount = inputJSON.Amount
 
 	parsedDate, err := time.Parse(time.RFC3339, inputJSON.Date)
 	if err != nil {
-		return errors.New("invalid date format")
+		return err
 	}
 	e.Date = parsedDate
-
-	if !regexp.MustCompile(`^[0-9]*$`).MatchString(inputJSON.Amount) {
-		return errors.New("amount must only contain numbers")
-	}
-	e.Amount = inputJSON.Amount
 
 	return nil
 }
 
 func UpsertEvent(c *gin.Context, event Event) (primitive.ObjectID, int, error) {
-	if err := godotenv.Load(); err != nil {
-		LogError("unable to load .env file", "err", err)
-		return primitive.NilObjectID, http.StatusInternalServerError, err
-	}
 	filter := make(map[string]interface{})
 	var err error
 	filter["date"] = event.Date
 	exist, code, err := GetEventFilter(c, filter)
 	if len(exist) >= max {
-		return primitive.NilObjectID, http.StatusBadRequest, errors.New("event limit reached")
+		LogWarn("event limit reached", "date", event.Date)
+		return primitive.NilObjectID, http.StatusBadRequest, ErrMaxEvent
 	} else if code != 200 && err != nil {
+		LogError("unable to check for event count", "err", err)
 		return primitive.NilObjectID, code, err
 	}
 
@@ -148,7 +148,7 @@ func GetEventFilter(c *gin.Context, input map[string]interface{}) ([]Event, int,
 	filter := bson.M{}
 	for key, value := range input {
 		if exists := slices.Contains(validFields, key); !exists {
-			return nil, http.StatusBadRequest, errors.New("invalid field " + key)
+			return nil, http.StatusBadRequest, ErrInvalidFilterKey
 		} else {
 			_, ok := value.(string)
 			if key == "date" && ok {
@@ -203,12 +203,35 @@ func getTimeInfo(year string, month string, timezone string) (int, int, *time.Lo
 	return yearNum, monthNum, timezoneLoc, nil
 }
 
+func isDateWithinRange(year int, month int, timezoneLoc *time.Location) (bool, error) {
+	monthRange, err := strconv.Atoi(os.Getenv("MAX_MONTH_RANGE"))
+	if err != nil {
+		return false, err
+	}
+	currentDate := time.Now().In(timezoneLoc)
+	checkedDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, timezoneLoc)
+	startDate := currentDate.AddDate(0, (-monthRange - 1), 0)
+	endDate := currentDate.AddDate(0, (monthRange + 1), 0)
+	return checkedDate.After(startDate) && checkedDate.Before(endDate), nil
+
+}
+
 func GetEventByMonth(c *gin.Context, year string, month string, timezone string) ([]Event, int, error) {
 	yearNum, monthNum, timezoneLoc, err := getTimeInfo(year, month, timezone)
 	if err != nil {
-		LogError("failed to get date/time info", "err", err)
+		LogError("unable to get date/time info", "err", err)
 		return nil, http.StatusBadRequest, err
 	}
+	validRange, err := isDateWithinRange(yearNum, monthNum, timezoneLoc)
+	if err != nil {
+		LogError("unable to check month range", "err", err)
+		return nil, http.StatusInternalServerError, err
+	}
+	if !validRange {
+		LogWarn("the requested date is outside the allowed range", "year", yearNum, "month", monthNum)
+		return nil, http.StatusBadRequest, ErrMaxMonthRange
+	}
+
 	startDate := time.Date(yearNum, time.Month(monthNum), 1, 0, 0, 0, 0, timezoneLoc)
 	lastDate := time.Date(yearNum, time.Month(monthNum)+1, 1, 0, 0, 0, 0, timezoneLoc).AddDate(0, 0, -1)
 	endDate := time.Date(yearNum, time.Month(monthNum), lastDate.Day(), 0, 0, 0, 0, timezoneLoc)
@@ -237,7 +260,7 @@ func GetEventByMonth(c *gin.Context, year string, month string, timezone string)
 func GetMonthSum(c *gin.Context, year string, month string, timezone string) ([]Sum, int, error) {
 	yearNum, monthNum, timezoneLoc, err := getTimeInfo(year, month, timezone)
 	if err != nil {
-		LogError("failed to get date/time info", "err", err)
+		LogError("unable to get date/time info", "err", err)
 		return nil, http.StatusBadRequest, err
 	}
 	startDate := time.Date(yearNum, time.Month(monthNum), 1, 0, 0, 0, 0, timezoneLoc)
@@ -252,7 +275,7 @@ func GetMonthSum(c *gin.Context, year string, month string, timezone string) ([]
 				{"$lte", endDate},
 			}},
 		}}},
-		// convert amount from string
+		// convert amount from string to decimal
 		bson.D{{"$addFields", bson.D{
 			{"amountDecimal", bson.D{
 				{"$toDecimal", "$amount"},
@@ -274,6 +297,8 @@ func GetMonthSum(c *gin.Context, year string, month string, timezone string) ([]
 			{"typeSum", bson.D{
 				{"$sum", "$categorySum"},
 			}},
+			// in previous step, id consist of type and category
+			// include only the category name part then push the name and sum to result
 			{"categories", bson.D{
 				{"$push", bson.D{
 					{"category", "$_id.category"},

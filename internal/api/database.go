@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -16,13 +14,9 @@ import (
 var client *mongo.Client
 
 func InitDB() {
-	if err := godotenv.Load(); err != nil {
-		fmt.Errorf("unable to load .env file err=%w", err)
-	}
-
 	timeout, err := strconv.Atoi(os.Getenv("CONNECT_TIMEOUT"))
 	if err != nil {
-		fmt.Errorf("unable to load .env file err=%w", err)
+		fmt.Errorf("unable to convert string to integer err=%w", err)
 	}
 	context, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer cancel()
@@ -39,7 +33,7 @@ func Disconnect() {
 	if client != nil {
 		err := client.Disconnect(context.Background())
 		if err != nil {
-			LogError("database.go", "Disconnect", "unable to disconnect client", "err", err)
+			LogError("unable to disconnect client", "err", err)
 		}
 	}
 }
@@ -51,12 +45,4 @@ func GetDB() *mongo.Database {
 
 func GetClient() *mongo.Client {
 	return client
-}
-
-func ConvertStrToObjId(id string) primitive.ObjectID {
-	objId, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		LogError("database.go", "ConvertStrToObjId", err.Error())
-	}
-	return objId
 }

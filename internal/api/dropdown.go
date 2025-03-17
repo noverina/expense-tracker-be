@@ -4,6 +4,11 @@ import (
 	"net/http"
 )
 
+type Dropdown struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 var types []Dropdown
 var expenses []Dropdown
 var incomes []Dropdown

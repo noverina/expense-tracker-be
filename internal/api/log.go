@@ -13,6 +13,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type Log struct {
+	ID       primitive.ObjectID `json:"_id" bson:"_id"`
+	File     string             `json:"file" bson:"file"`
+	Function string             `json:"function" bson:"function"`
+	Error    string             `json:"error" bson:"error"`
+	Date     time.Time          `json:"date" bson:"date"`
+}
+
 var logColl *mongo.Collection
 
 func InitLog() {

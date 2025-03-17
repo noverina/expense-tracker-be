@@ -16,6 +16,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type Client struct {
+	Identifier string `json:"identifier" bson:"_id"`
+	SecretKey  string `json:"secret_key" bson:"secret_key"`
+	Token      string `json:"token" bson:"token"`
+	Role       string `json:"role" bson:"role"`
+	Exp        int64  `json:"exp" bson:"exp"`
+}
+
+type Claims struct {
+	jwt.RegisteredClaims
+	Role string
+}
+
 var authColl *mongo.Collection
 
 func InitAuth() {
@@ -85,7 +98,7 @@ func validateJWT(tokenString string) (*jwt.Token, *Claims, error) {
 	}
 
 	if !token.Valid {
-		return nil, nil, fmt.Errorf("invalid token")
+		return nil, nil, ErrInvalidToken
 	}
 
 	return token, claims, nil
