@@ -5,7 +5,7 @@ Backend for expense tracking application.
 Generate keys for signing JWT:
 
 - Generate private key\
-  ` openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048`\
+  ` openssl genpkey -algorithm RSA -out private_key.pem -pkeyopt rsa_keygen_bits:2048`
 - Generate public key\
   `openssl pkey -in private_key.pem -pubout -out public_key.pem`
 

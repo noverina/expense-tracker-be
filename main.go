@@ -117,5 +117,5 @@ func main() {
 		}
 	}
 
-	r.Run("localhost:8083")
+	r.Run("0.0.0.0:8083")
 }
