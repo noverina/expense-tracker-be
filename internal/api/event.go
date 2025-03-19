@@ -210,9 +210,9 @@ func isDateWithinRange(year int, month int, timezoneLoc *time.Location) (bool, e
 	}
 	currentDate := time.Now().In(timezoneLoc)
 	checkedDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, timezoneLoc)
-	startDate := currentDate.AddDate(0, (-monthRange - 1), 0)
-	endDate := currentDate.AddDate(0, (monthRange + 1), 0)
-	return checkedDate.After(startDate) && checkedDate.Before(endDate), nil
+	minDate := currentDate.AddDate(0, (-monthRange - 1), 0)
+	maxDate := currentDate.AddDate(0, (monthRange + 1), 0)
+	return checkedDate.After(minDate) && checkedDate.Before(maxDate), nil
 
 }
 

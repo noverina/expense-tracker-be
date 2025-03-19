@@ -1,0 +1,69 @@
+{"_id":{"$oid":"67da26f144fa9c0b7cdcd7c9"},"description":"fried chimkin yum","type":"expense","category":"household","date":{"$date":"2025-03-12T17:00:00Z"},"amount":"40000"}
+{"_id":{"$oid":"67da270244fa9c0b7cdcd7ca"},"description":"medicine","type":"expense","category":"health","date":{"$date":"2025-03-16T17:00:00Z"},"amount":"55250"}
+{"_id":{"$oid":"67da271c44fa9c0b7cdcd7cb"},"description":"found some money on my pocket :O","type":"income","category":"petty cash","date":{"$date":"2025-03-09T17:00:00Z"},"amount":"50000"}
+{"_id":{"$oid":"67da272e44fa9c0b7cdcd7cc"},"description":"ojol","type":"expense","category":"transport","date":{"$date":"2025-03-26T17:00:00Z"},"amount":"25000"}
+{"_id":{"$oid":"67da274344fa9c0b7cdcd7cd"},"description":"drinking out with friends","type":"expense","category":"social","date":{"$date":"2025-03-03T17:00:00Z"},"amount":"1200000"}
+{"_id":{"$oid":"67da276544fa9c0b7cdcd7ce"},"description":"foundation","type":"expense","category":"beauty","date":{"$date":"2025-02-28T17:00:00Z"},"amount":"250000"}
+{"_id":{"$oid":"67da277444fa9c0b7cdcd7cf"},"description":"new haircut","type":"expense","category":"beauty","date":{"$date":"2025-02-28T17:00:00Z"},"amount":"150000"}
+{"_id":{"$oid":"67da278b44fa9c0b7cdcd7d0"},"description":"tuition fee","type":"expense","category":"education","date":{"$date":"2025-03-09T17:00:00Z"},"amount":"1000000"}
+{"_id":{"$oid":"67da27af44fa9c0b7cdcd7d1"},"description":"","type":"expense","category":"other","date":{"$date":"2025-03-08T17:00:00Z"},"amount":"2500"}
+{"_id":{"$oid":"67da27c244fa9c0b7cdcd7d2"},"description":"hamburger","type":"expense","category":"food","date":{"$date":"2025-03-21T17:00:00Z"},"amount":"50000"}
+{"_id":{"$oid":"67da281944fa9c0b7cdcd7d3"},"description":"allowance from mom","type":"income","category":"allowance","date":{"$date":"2025-01-31T17:00:00Z"},"amount":"3000000"}
+{"_id":{"$oid":"67da282444fa9c0b7cdcd7d4"},"description":"sold my shoes","type":"income","category":"other","date":{"$date":"2025-02-24T17:00:00Z"},"amount":"500000"}
+{"_id":{"$oid":"67da283c44fa9c0b7cdcd7d5"},"description":"tuition fee","type":"expense","category":"education","date":{"$date":"2025-02-15T17:00:00Z"},"amount":"1000000"}
+{"_id":{"$oid":"67da284a44fa9c0b7cdcd7d6"},"description":"ojol","type":"expense","category":"transport","date":{"$date":"2025-02-13T17:00:00Z"},"amount":"30000"}
+{"_id":{"$oid":"67da285844fa9c0b7cdcd7d7"},"description":"new shirt","type":"expense","category":"fashion","date":{"$date":"2025-02-13T17:00:00Z"},"amount":"500000"}
+{"_id":{"$oid":"67da286844fa9c0b7cdcd7d8"},"description":"","type":"expense","category":"other","date":{"$date":"2025-02-17T17:00:00Z"},"amount":"12000"}
+{"_id":{"$oid":"67da287344fa9c0b7cdcd7d9"},"description":"","type":"income","category":"petty cash","date":{"$date":"2025-02-13T17:00:00Z"},"amount":"5000"}
+{"_id":{"$oid":"67da288e44fa9c0b7cdcd7da"},"description":"friend birthday gift","type":"expense","category":"social","date":{"$date":"2025-02-04T17:00:00Z"},"amount":"500000"}
+{"_id":{"$oid":"67da296644fa9c0b7cdcd7dd"},"description":"busway","type":"expense","category":"transport","date":{"$date":"2025-02-26T17:00:00Z"},"amount":"7000"}
+{"_id":{"$oid":"67da297444fa9c0b7cdcd7de"},"description":"busway","type":"expense","category":"transport","date":{"$date":"2025-02-19T17:00:00Z"},"amount":"7000"}
+{"_id":{"$oid":"67da32b544fa9c0b7cdcd7df"},"description":"","type":"income","category":"salary","date":{"$date":"2025-01-01T17:00:00Z"},"amount":"10000000"}
+{"_id":{"$oid":"67da32be44fa9c0b7cdcd7e0"},"description":"","type":"expense","category":"beauty","date":{"$date":"2024-12-31T17:00:00Z"},"amount":"75000"}
+{"_id":{"$oid":"67da32c544fa9c0b7cdcd7e1"},"description":"","type":"expense","category":"fashion","date":{"$date":"2024-12-31T17:00:00Z"},"amount":"500000"}
+{"_id":{"$oid":"67da32cb44fa9c0b7cdcd7e2"},"description":"","type":"expense","category":"transport","date":{"$date":"2024-12-31T17:00:00Z"},"amount":"30000"}
+{"_id":{"$oid":"67da32d544fa9c0b7cdcd7e3"},"description":"","type":"expense","category":"food","date":{"$date":"2025-01-01T17:00:00Z"},"amount":"93000"}
+{"_id":{"$oid":"67da32e044fa9c0b7cdcd7e4"},"description":"","type":"income","category":"petty cash","date":{"$date":"2025-01-18T17:00:00Z"},"amount":"25000"}
+{"_id":{"$oid":"67da32ec44fa9c0b7cdcd7e5"},"description":"","type":"income","category":"petty cash","date":{"$date":"2025-01-30T17:00:00Z"},"amount":"30000"}
+{"_id":{"$oid":"67da32fa44fa9c0b7cdcd7e6"},"description":"","type":"expense","category":"social","date":{"$date":"2025-01-12T17:00:00Z"},"amount":"350000"}
+{"_id":{"$oid":"67da330244fa9c0b7cdcd7e7"},"description":"","type":"expense","category":"beauty","date":{"$date":"2025-01-28T17:00:00Z"},"amount":"500000"}
+{"_id":{"$oid":"67da330d44fa9c0b7cdcd7e8"},"description":"","type":"expense","category":"beauty","date":{"$date":"2025-01-22T17:00:00Z"},"amount":"30000"}
+{"_id":{"$oid":"67da331344fa9c0b7cdcd7e9"},"description":"","type":"income","category":"other","date":{"$date":"2025-01-14T17:00:00Z"},"amount":"26000"}
+{"_id":{"$oid":"67da369b44fa9c0b7cdcd7ea"},"description":"from dad","type":"income","category":"allowance","date":{"$date":"2025-03-31T17:00:00Z"},"amount":"300000"}
+{"_id":{"$oid":"67da36a944fa9c0b7cdcd7eb"},"description":"from mom","type":"income","category":"allowance","date":{"$date":"2025-04-15T17:00:00Z"},"amount":"500000"}
+{"_id":{"$oid":"67da36b344fa9c0b7cdcd7ec"},"description":"from auntie","type":"income","category":"allowance","date":{"$date":"2025-04-10T17:00:00Z"},"amount":"100000"}
+{"_id":{"$oid":"67da36be44fa9c0b7cdcd7ed"},"description":"from granny","type":"income","category":"allowance","date":{"$date":"2025-04-19T17:00:00Z"},"amount":"50000"}
+{"_id":{"$oid":"67da36d244fa9c0b7cdcd7ee"},"description":"busway","type":"expense","category":"transport","date":{"$date":"2025-03-31T17:00:00Z"},"amount":"3500"}
+{"_id":{"$oid":"67da36db44fa9c0b7cdcd7ef"},"description":"taxi","type":"expense","category":"transport","date":{"$date":"2025-04-03T17:00:00Z"},"amount":"25000"}
+{"_id":{"$oid":"67da36f644fa9c0b7cdcd7f0"},"description":"new hat","type":"expense","category":"fashion","date":{"$date":"2025-04-09T17:00:00Z"},"amount":"30000"}
+{"_id":{"$oid":"67da370944fa9c0b7cdcd7f1"},"description":"dimsum","type":"expense","category":"food","date":{"$date":"2025-04-09T17:00:00Z"},"amount":"20000"}
+{"_id":{"$oid":"67da371644fa9c0b7cdcd7f2"},"description":"","type":"income","category":"other","date":{"$date":"2025-04-06T17:00:00Z"},"amount":"20000"}
+{"_id":{"$oid":"67da374344fa9c0b7cdcd7f3"},"description":"medicine","type":"expense","category":"health","date":{"$date":"2025-04-21T17:00:00Z"},"amount":"30000"}
+{"_id":{"$oid":"67da375444fa9c0b7cdcd7f4"},"description":"fuel","type":"expense","category":"transport","date":{"$date":"2025-04-13T17:00:00Z"},"amount":"20000"}
+{"_id":{"$oid":"67da376144fa9c0b7cdcd7f5"},"description":"parking","type":"expense","category":"other","date":{"$date":"2025-04-13T17:00:00Z"},"amount":"2000"}
+{"_id":{"$oid":"67da377444fa9c0b7cdcd7f6"},"description":"gift for friend","type":"expense","category":"social","date":{"$date":"2025-04-13T17:00:00Z"},"amount":"50000"}
+{"_id":{"$oid":"67da378e44fa9c0b7cdcd7f7"},"description":"","type":"expense","category":"other","date":{"$date":"2025-04-25T17:00:00Z"},"amount":"3000"}
+{"_id":{"$oid":"67da379c44fa9c0b7cdcd7f8"},"description":"lipstick","type":"expense","category":"beauty","date":{"$date":"2025-04-18T17:00:00Z"},"amount":"50000"}
+{"_id":{"$oid":"67da37ab44fa9c0b7cdcd7f9"},"description":"paracetamol","type":"expense","category":"health","date":{"$date":"2025-04-29T17:00:00Z"},"amount":"25000"}
+{"_id":{"$oid":"67da37bf44fa9c0b7cdcd7fa"},"description":"doctor visit + medicine","type":"expense","category":"health","date":{"$date":"2025-04-28T17:00:00Z"},"amount":"150000"}
+{"_id":{"$oid":"67da37d344fa9c0b7cdcd7fb"},"description":"new frying pan","type":"expense","category":"household","date":{"$date":"2025-05-20T17:00:00Z"},"amount":"500000"}
+{"_id":{"$oid":"67da37e344fa9c0b7cdcd7fc"},"description":"","type":"income","category":"salary","date":{"$date":"2025-04-30T17:00:00Z"},"amount":"3000000"}
+{"_id":{"$oid":"67da380244fa9c0b7cdcd7fd"},"description":"borrowed money","type":"income","category":"other","date":{"$date":"2025-05-11T17:00:00Z"},"amount":"300000"}
+{"_id":{"$oid":"67da382444fa9c0b7cdcd7fe"},"description":"cafe date","type":"expense","category":"social","date":{"$date":"2025-05-02T17:00:00Z"},"amount":"300000"}
+{"_id":{"$oid":"67da384844fa9c0b7cdcd7ff"},"description":"groceries","type":"expense","category":"household","date":{"$date":"2025-05-02T17:00:00Z"},"amount":"50000"}
+{"_id":{"$oid":"67da385d44fa9c0b7cdcd800"},"description":"movie ticket","type":"expense","category":"social","date":{"$date":"2025-05-05T17:00:00Z"},"amount":"50000"}
+{"_id":{"$oid":"67da386c44fa9c0b7cdcd801"},"description":"busway","type":"expense","category":"transport","date":{"$date":"2025-05-15T17:00:00Z"},"amount":"3500"}
+{"_id":{"$oid":"67da387544fa9c0b7cdcd802"},"description":"busway","type":"expense","category":"transport","date":{"$date":"2025-05-15T17:00:00Z"},"amount":"3500"}
+{"_id":{"$oid":"67da389044fa9c0b7cdcd803"},"description":"topped up card","type":"expense","category":"transport","date":{"$date":"2025-05-26T17:00:00Z"},"amount":"30000"}
+{"_id":{"$oid":"67da389f44fa9c0b7cdcd804"},"description":"medical checkup","type":"expense","category":"health","date":{"$date":"2025-05-17T17:00:00Z"},"amount":"500000"}
+{"_id":{"$oid":"67da38b144fa9c0b7cdcd805"},"description":"","type":"expense","category":"food","date":{"$date":"2025-05-15T17:00:00Z"},"amount":"30000"}
+{"_id":{"$oid":"67da38bd44fa9c0b7cdcd806"},"description":"","type":"income","category":"other","date":{"$date":"2025-05-07T17:00:00Z"},"amount":"35000"}
+{"_id":{"$oid":"67da38cd44fa9c0b7cdcd807"},"description":"household groceries run","type":"expense","category":"household","date":{"$date":"2025-05-30T17:00:00Z"},"amount":"500000"}
+{"_id":{"$oid":"67da38dd44fa9c0b7cdcd808"},"description":"new shoes","type":"expense","category":"fashion","date":{"$date":"2025-05-18T17:00:00Z"},"amount":"300000"}
+{"_id":{"$oid":"67da390f44fa9c0b7cdcd809"},"description":"","type":"income","category":"salary","date":{"$date":"2025-06-30T17:00:00Z"},"amount":"5000000"}
+{"_id":{"$oid":"67da391544fa9c0b7cdcd80a"},"description":"","type":"expense","category":"health","date":{"$date":"2025-07-22T17:00:00Z"},"amount":"300000"}
+{"_id":{"$oid":"67da391d44fa9c0b7cdcd80b"},"description":"","type":"expense","category":"transport","date":{"$date":"2025-07-08T17:00:00Z"},"amount":"50000"}
+{"_id":{"$oid":"67da392544fa9c0b7cdcd80c"},"description":"","type":"expense","category":"fashion","date":{"$date":"2025-07-12T17:00:00Z"},"amount":"300000"}
+{"_id":{"$oid":"67da392d44fa9c0b7cdcd80d"},"description":"","type":"expense","category":"social","date":{"$date":"2025-07-03T17:00:00Z"},"amount":"20000"}
+{"_id":{"$oid":"67da3a6f44fa9c0b7cdcd80e"},"description":"","type":"income","category":"salary","date":{"$date":"2025-02-28T17:00:00Z"},"amount":"5000000"}
+{"_id":{"$oid":"67da3ac144fa9c0b7cdcd80f"},"description":"","type":"income","category":"other","date":{"$date":"2025-02-28T17:00:00Z"},"amount":"3000"}
