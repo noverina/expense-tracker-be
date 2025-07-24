@@ -68,7 +68,7 @@ func main() {
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{address},
-		AllowMethods:     []string{"GET", "POST", "DELETE"},
+		AllowMethods:     []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
 	}))
@@ -87,10 +87,8 @@ func main() {
 
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	v1 := r.Group("/api/v1")
-	v1.Use(api.JWTAuthMiddleware())
 	{
 		home := v1.Group("")
-		home.Use(api.RoleAuthMiddleware("client"))
 		{
 			home.GET("/ping", controller.Ping)
 
@@ -117,5 +115,5 @@ func main() {
 		}
 	}
 
-	r.Run("0.0.0.0:8083")
+	r.Run()
 }
