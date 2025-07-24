@@ -115,5 +115,6 @@ func main() {
 		}
 	}
 
-	r.Run()
+	  port := os.Getenv("PORT")
+	r.Run("0.0.0.0:" + port)
 }
