@@ -2,6 +2,7 @@ package api
 
 import (
 	"crypto/rsa"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"os"
@@ -52,7 +53,8 @@ func findById(c *gin.Context, id string) (*Client, error) {
 func loadPrivateKey() (*rsa.PrivateKey, error) {
 	filePath := os.Getenv("PRIVATE_KEY")
 
-	keyData, err := os.ReadFile(filePath)
+	// keyData, err := os.ReadFile(filePath)
+	keyData, err := base64.StdEncoding.DecodeString(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +70,13 @@ func loadPrivateKey() (*rsa.PrivateKey, error) {
 func loadPublicKey() (*rsa.PublicKey, error) {
 	filePath := os.Getenv("PUBLIC_KEY")
 
-	keyData, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
+	//keyData, err := os.ReadFile(filePath)
+	keyData, err := base64.StdEncoding.DecodeString(filePath)
+  	if err != nil { 
+		LogError("unable to decode public key", "err", err)
+		return nil, err 
 	}
-
+	
 	key, err := jwt.ParseRSAPublicKeyFromPEM(keyData)
 	if err != nil {
 		return nil, err
