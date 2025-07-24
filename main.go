@@ -5,6 +5,7 @@ import (
 	"expense-tracker/internal/api"
 	"expense-tracker/internal/controller"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -59,6 +60,12 @@ func ErrorHandler() gin.HandlerFunc {
 // @description ! IMPORTANT ! Please prepend Bearer manually. Example: "Bearer {token}"
 // @BasePath  /api/v1
 func main() {
+	if os.Getenv("GIN_MODE") != "release" {
+		if err := godotenv.Load(); err != nil {
+			log.Println("No .env file found, skipping")
+		}
+	}	
+	
 	if err := godotenv.Load(); err != nil {
 		fmt.Errorf("unable to load .env file err=%w", err)
 	}
@@ -115,6 +122,6 @@ func main() {
 		}
 	}
 
-	  port := os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	r.Run("0.0.0.0:" + port)
 }
