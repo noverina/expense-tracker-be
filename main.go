@@ -65,7 +65,7 @@ func main() {
 			log.Println("No .env file found, skipping")
 		}
 	}	
-	
+
 	if err := godotenv.Load(); err != nil {
 		fmt.Errorf("unable to load .env file err=%w", err)
 	}
@@ -106,6 +106,7 @@ func main() {
 			auth.GET("", api.RoleAuthMiddleware("admin"), controller.InvalidateToken)
 		}
 		event := v1.Group("/event")
+		event.Use(api.JWTAuthMiddleware())
 		event.Use(api.RoleAuthMiddleware("client"))
 		{
 			event.POST("", controller.UpsertEvent)
@@ -114,6 +115,7 @@ func main() {
 			event.GET("/sum", controller.GetMonthSum)
 		}
 		dropdown := v1.Group("/dropdown")
+		dropdown.Use(api.JWTAuthMiddleware())
 		dropdown.Use(api.RoleAuthMiddleware("client"))
 		{
 			dropdown.GET("/type", controller.GetTypes)
