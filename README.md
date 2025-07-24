@@ -10,7 +10,7 @@ Backend for expense tracking application.
   `openssl pkey -in private_key.pem -pubout -out public_key.pem`
 - Encode these keys to base64 form (Windows PS)\
   `[Convert]::ToBase64String([IO.File]::ReadAllBytes("path_to_key_here"))`
-- Note: you need to generate the token for auth yourself, check out my go-token-generator repository
+- Note: you need to generate the token for the initial auth yourself, check out my go-token-generator repository
 
 - Make an `.env` at the root of this project. Change the one with -- with appropriate values:
 <pre><code>export MONGODB_URI=--connection string for mongodb database

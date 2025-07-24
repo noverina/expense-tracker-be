@@ -254,7 +254,8 @@ func RoleAuthMiddleware(requiredRole string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get("role")
 		if !exists || (role != requiredRole && role != "admin") {
-			LogWarn("jwt auth error", "err", "no permission")
+			roleStr := role.(string)
+			LogWarn("jwt auth error", "err", "no permission", "role", roleStr, "required", requiredRole)
 			c.JSON(http.StatusForbidden, HttpResponse{
 				IsError: true,
 				Message: "you don't have permission to access this resource",
